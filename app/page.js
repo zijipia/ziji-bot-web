@@ -1,4 +1,4 @@
-"use client"; // Đảm bảo rằng file này là Client Component
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   FaPlay,
@@ -21,6 +21,10 @@ const MusicApp = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [playlist, setPlaylist] = useState([]);
   const [showLyrics, setShowLyrics] = useState(false);
+  const ziavt =
+    "https://images-ext-1.discordapp.net/external/8SF_9ZfRtB-4fWvjzadzM8IYUnpxnx8dYEczyoC04rw/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/891275176409460746/8e481d406a16fe31baef245bfe086a81.webp?format=webp&width=701&height=701";
+  const zibot =
+    "https://images-ext-1.discordapp.net/external/XGwq-EZsJ5mtxEU5-H0jSyDObe-WcJNHRHWyAElPRSg/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/1005716197259612193/a_a5edfffd377c12de479af9139b26eb5d.gif?width=449&height=449";
 
   const dummyTracks = [
     {
@@ -28,8 +32,7 @@ const MusicApp = () => {
       title: "Summer Vibes",
       artist: "Chill Beats",
       album: "Relaxation",
-      cover:
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: ziavt,
       lyrics:
         "Verse 1:\nSun-kissed days and starry nights\nWarm breeze whispers, everything's alright\nSandy toes and salty air\nSummer vibes are everywhere\n\nChorus:\nOh, summer vibes\nRiding the waves of good times\nSummer vibes\nMaking memories that shine\n\nVerse 2:\nBBQ smoke and laughter loud\nFriends and family, a joyful crowd\nIce cream melts, fireflies glow\nSummer's magic in full flow\n\n(Repeat Chorus)\n\nBridge:\nLet's make this moment last\nHold onto summer, make it past\nThese golden days, this perfect haze\nForever in our hearts, always\n\n(Repeat Chorus)\n\nOutro:\nSummer vibes, oh summer vibes\nWe're alive with summer vibes",
     },
@@ -38,8 +41,7 @@ const MusicApp = () => {
       title: "Neon Lights",
       artist: "Electro Pulse",
       album: "Synthwave",
-      cover:
-        "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nCity streets bathed in electric glow\nNeon signs put on a show\nSynthesizers set the mood\nRetro future attitude\n\nChorus:\nNeon lights, neon lights\nIlluminate our wildest nights\nNeon lights, neon lights\nPainting dreams in technicolor bright\n\nVerse 2:\nCyberpunk vision come alive\nDigital love helps us survive\nPixelated heart beats fast\nIn a world that's unsurpassed\n\n(Repeat Chorus)\n\nBridge:\nWe're living in a neon dream\nNothing's ever as it seems\nVirtual reality's our home\nIn this chrome and LED zone\n\n(Repeat Chorus)\n\nOutro:\nAs dawn breaks, the lights fade away\nBut in our minds, they'll always stay\nNeon lights, forever bright\nGuiding us through the night",
     },
@@ -48,8 +50,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -58,8 +59,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: ziavt,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -68,98 +68,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 6,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 7,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 8,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 3,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 4,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 5,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 6,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 7,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 8,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -168,8 +77,7 @@ const MusicApp = () => {
       title: "Summer Vibes",
       artist: "Chill Beats",
       album: "Relaxation",
-      cover:
-        "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: ziavt,
       lyrics:
         "Verse 1:\nSun-kissed days and starry nights\nWarm breeze whispers, everything's alright\nSandy toes and salty air\nSummer vibes are everywhere\n\nChorus:\nOh, summer vibes\nRiding the waves of good times\nSummer vibes\nMaking memories that shine\n\nVerse 2:\nBBQ smoke and laughter loud\nFriends and family, a joyful crowd\nIce cream melts, fireflies glow\nSummer's magic in full flow\n\n(Repeat Chorus)\n\nBridge:\nLet's make this moment last\nHold onto summer, make it past\nThese golden days, this perfect haze\nForever in our hearts, always\n\n(Repeat Chorus)\n\nOutro:\nSummer vibes, oh summer vibes\nWe're alive with summer vibes",
     },
@@ -178,8 +86,7 @@ const MusicApp = () => {
       title: "Neon Lights",
       artist: "Electro Pulse",
       album: "Synthwave",
-      cover:
-        "https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nCity streets bathed in electric glow\nNeon signs put on a show\nSynthesizers set the mood\nRetro future attitude\n\nChorus:\nNeon lights, neon lights\nIlluminate our wildest nights\nNeon lights, neon lights\nPainting dreams in technicolor bright\n\nVerse 2:\nCyberpunk vision come alive\nDigital love helps us survive\nPixelated heart beats fast\nIn a world that's unsurpassed\n\n(Repeat Chorus)\n\nBridge:\nWe're living in a neon dream\nNothing's ever as it seems\nVirtual reality's our home\nIn this chrome and LED zone\n\n(Repeat Chorus)\n\nOutro:\nAs dawn breaks, the lights fade away\nBut in our minds, they'll always stay\nNeon lights, forever bright\nGuiding us through the night",
     },
@@ -188,8 +95,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -198,8 +104,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: ziavt,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -208,48 +113,34 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
     {
-      id: 6,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      id: 1,
+      title: "Summer Vibes",
+      artist: "Chill Beats",
+      album: "Relaxation",
+      cover: ziavt,
       lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
+        "Verse 1:\nSun-kissed days and starry nights\nWarm breeze whispers, everything's alright\nSandy toes and salty air\nSummer vibes are everywhere\n\nChorus:\nOh, summer vibes\nRiding the waves of good times\nSummer vibes\nMaking memories that shine\n\nVerse 2:\nBBQ smoke and laughter loud\nFriends and family, a joyful crowd\nIce cream melts, fireflies glow\nSummer's magic in full flow\n\n(Repeat Chorus)\n\nBridge:\nLet's make this moment last\nHold onto summer, make it past\nThese golden days, this perfect haze\nForever in our hearts, always\n\n(Repeat Chorus)\n\nOutro:\nSummer vibes, oh summer vibes\nWe're alive with summer vibes",
     },
     {
-      id: 7,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      id: 2,
+      title: "Neon Lights",
+      artist: "Electro Pulse",
+      album: "Synthwave",
+      cover: zibot,
       lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 8,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
+        "Verse 1:\nCity streets bathed in electric glow\nNeon signs put on a show\nSynthesizers set the mood\nRetro future attitude\n\nChorus:\nNeon lights, neon lights\nIlluminate our wildest nights\nNeon lights, neon lights\nPainting dreams in technicolor bright\n\nVerse 2:\nCyberpunk vision come alive\nDigital love helps us survive\nPixelated heart beats fast\nIn a world that's unsurpassed\n\n(Repeat Chorus)\n\nBridge:\nWe're living in a neon dream\nNothing's ever as it seems\nVirtual reality's our home\nIn this chrome and LED zone\n\n(Repeat Chorus)\n\nOutro:\nAs dawn breaks, the lights fade away\nBut in our minds, they'll always stay\nNeon lights, forever bright\nGuiding us through the night",
     },
     {
       id: 3,
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -258,8 +149,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: ziavt,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -268,38 +158,7 @@ const MusicApp = () => {
       title: "Acoustic Dreams",
       artist: "Strings & Wood",
       album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 6,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 7,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
-      lyrics:
-        "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
-    },
-    {
-      id: 8,
-      title: "Acoustic Dreams",
-      artist: "Strings & Wood",
-      album: "Unplugged",
-      cover:
-        "https://images.unsplash.com/photo-1511379938547-c1f69419868d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8bXVzaWN8fHx8fHwxNjg1NzI0NjEw&ixlib=rb-4.0.3&q=80&w=1080",
+      cover: zibot,
       lyrics:
         "Verse 1:\nGentle strums on wooden strings\nMelodies that make hearts sing\nFinger-picked notes float on air\nAcoustic dreams beyond compare\n\nChorus:\nAcoustic dreams, so pure and true\nSix strings weaving stories new\nAcoustic dreams, in major and minor\nEmotions laid bare, nothing finer\n\nVerse 2:\nUnplugged and raw, no frills attached\nAuthenticity unmatched\nVoices blend with guitar's tone\nCreating worlds all of their own\n\n(Repeat Chorus)\n\nBridge:\nFrom coffee shops to concert halls\nThese acoustic dreams enthrall\nStripped-down songs touch the soul\nMaking broken spirits whole\n\n(Repeat Chorus)\n\nOutro:\nAs the last note fades away\nAcoustic dreams are here to stay\nIn our hearts, they'll always be\nA soundtrack to eternity",
     },
@@ -320,9 +179,9 @@ const MusicApp = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
-      <header className="bg-indigo-600 text-white p-4">
+      {/* <header className="bg-indigo-600 text-white p-4">
         <h1 className="text-2xl font-bold">Music Web App</h1>
-      </header>
+      </header> */}
 
       <main className="flex-grow flex flex-col md:flex-row p-4 gap-4">
         <section className="w-full md:w-2/3 bg-white rounded-lg shadow-lg p-6">
@@ -336,7 +195,7 @@ const MusicApp = () => {
             />
             <FaSearch className="absolute top-3 right-3 text-gray-400" />
           </div>
-          <h2 className="text-xl font-semibold mb-4">Featured Tracks</h2>
+          <h2 className="text-xl font-semibold mb-4">Queue</h2>
           <div className="max-h-[630px] overflow-y-auto">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {playlist.map((track) => (
@@ -437,7 +296,7 @@ const MusicApp = () => {
       </main>
 
       <footer className="bg-gray-200 text-center p-4 mt-auto">
-        <p>&copy; 2023 Music Web App. All rights reserved.</p>
+        <p>&copy; 2099 Music Web App. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -26,7 +26,7 @@ const MusicApp = () => {
   const [mounted, setMounted] = useState(false);
 
   const ziavt =
-    "https://images-ext-1.discordapp.net/external/8SF_9ZfRtB-4fWvjzadzM8IYUnpxnx8dYEczyoC04rw/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/891275176409460746/8e481d406a16fe31baef245bfe086a81.webp?format=webp&width=701&height=701";
+    "https://i.ytimg.com/vi/krKbdpbHdWg/maxresdefault.jpg";
   const zibot =
     "https://images-ext-1.discordapp.net/external/XGwq-EZsJ5mtxEU5-H0jSyDObe-WcJNHRHWyAElPRSg/%3Fsize%3D1024/https/cdn.discordapp.com/avatars/1005716197259612193/a_a5edfffd377c12de479af9139b26eb5d.gif?width=449&height=449";
 

@@ -1,19 +1,45 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "./auth-provider";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { useToast } from "@/hooks/use-toast";
 
 export function LoginButton() {
-  const { user, login, logout } = useAuth();
+	const { data: session, status } = useSession();
+	const { toast } = useToast();
+	const [isLoading, setIsLoading] = useState(false);
 
-  if (user) {
-    return (
-      <div className="mb-4">
-        <p>Logged in as {user.username}</p>
-        <Button onClick={logout}>Logout</Button>
-      </div>
-    );
-  }
+	const handleSignIn = async () => {
+		setIsLoading(true);
+		try {
+			const result = await signIn("discord", { callbackUrl: "/" });
+			if (result?.error) {
+				toast({
+					title: "Error",
+					description: "Failed to sign in. Please try again.",
+					variant: "destructive",
+				});
+			}
+		} catch (error) {
+			console.error("Sign in error:", error);
+			toast({
+				title: "Error",
+				description: "An unexpected error occurred. Please try again.",
+				variant: "destructive",
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-  return <Button onClick={login}>Login with Discord</Button>;
+	if (status === "loading" || isLoading) {
+		return <Button disabled>Loading...</Button>;
+	}
+
+	if (session) {
+		return <Button onClick={() => signOut()}>Logout</Button>;
+	}
+
+	return <Button onClick={handleSignIn}>Login with Discord</Button>;
 }

@@ -1,14 +1,13 @@
-"use client";
-
 import { MusicController } from "@/components/music-controller";
-import { LoginButton } from "@/components/login-button";
+import { Header } from "@/components/header";
 
 export default function Home() {
 	return (
-		<div className='container mx-auto p-4'>
-			<h1 className='text-3xl font-bold mb-4'>Discord Music Bot Controller</h1>
-			<LoginButton />
-			<MusicController />
+		<div className='min-h-screen bg-background'>
+			<Header />
+			<main className='container mx-auto p-4'>
+				<MusicController />
+			</main>
 		</div>
 	);
 }

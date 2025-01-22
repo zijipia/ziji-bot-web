@@ -26,7 +26,6 @@ export async function GET(req) {
 
 		const guilds = await response.json();
 
-		// For simplicity, we'll just use the first guild. In a real app, you might want to let the user choose.
 		guilds.forEach(async (guild) => {
 			const channelsResponse = await fetch(`https://discord.com/api/guilds/${guild.id}/channels`, {
 				headers: {

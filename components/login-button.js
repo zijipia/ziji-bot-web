@@ -34,12 +34,30 @@ export function LoginButton() {
 	};
 
 	if (status === "loading" || isLoading) {
-		return <Button disabled>Loading...</Button>;
+		return (
+			<Button
+				variant='outline'
+				disabled>
+				Loading...
+			</Button>
+		);
 	}
 
 	if (session) {
-		return <Button onClick={() => signOut()}>Logout</Button>;
+		return (
+			<Button
+				variant='outline'
+				onClick={() => signOut()}>
+				Logout
+			</Button>
+		);
 	}
 
-	return <Button onClick={handleSignIn}>Login with Discord</Button>;
+	return (
+		<Button
+			variant='outline'
+			onClick={handleSignIn}>
+			Login with Discord
+		</Button>
+	);
 }

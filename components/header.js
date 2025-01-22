@@ -17,12 +17,12 @@ export function Header() {
 						<div className='flex items-center space-x-2'>
 							<Avatar>
 								<AvatarImage
-									src={session.user.image}
-									alt={session.user.name}
+									src={session.user?.image_url}
+									alt={session.user?.username}
 								/>
-								<AvatarFallback>{session.user.name[0]}</AvatarFallback>
+								<AvatarFallback>{session.user?.name?.[0]}</AvatarFallback>
 							</Avatar>
-							<span>{session.user.name}</span>
+							<span>{session.user?.username}</span>
 						</div>
 					)}
 					<LoginButton />

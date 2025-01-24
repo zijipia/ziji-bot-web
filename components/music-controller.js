@@ -1,5 +1,6 @@
 "use client";
 
+import { io } from "socket.io-client";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,12 +8,13 @@ import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 
 import {
 	FaPlay,
@@ -34,7 +36,10 @@ export function MusicController() {
 	const [guild, setGuild] = useState("");
 	const [voiceChannels, setVoiceChannels] = useState([]);
 	const [statistics, setStatistics] = useState({});
-	const [tracks, setTrack] = useState([]);
+	const [duration, setDuration] = useState({
+		current: "0:00",
+		total: "0:00",
+	});
 	const { data: session, status } = useSession();
 	const { toast } = useToast();
 
@@ -48,62 +53,57 @@ export function MusicController() {
 
 	useEffect(() => {
 		if (session) {
-			const ws = new WebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
-
-			ws.onopen = () => {
+			const wss = new io("http://localhost:2003", {
+				auth: {
+					token: session.accessToken,
+				},
+			});
+			wss.on("connect", () => {
 				console.log("WebSocket connected");
-				setSocket(ws);
-				// ws.emit("GetVoice", session.user.id);
+				setSocket(socket);
+				wss.emit("GetVoice", session.user.id);
+			});
 
-				ws.send(JSON.stringify({ command: "GetVoice", userID: session.user.id }));
-				// Fetch voice channels when connected
-				// fetchVoiceChannels();
-			};
+			wss.on("ReplyVoice", (data) => {
+				setVoiceChannels(data.channel);
+				setGuild(data.guild);
+			});
 
-			ws.onmessage = (event) => {
-				const data = JSON.parse(event.data);
-				// console.log("Received message:", data);
-				switch (data.command) {
-					case "ReplyVoice":
-						{
-							setVoiceChannels(data.channel);
-							setGuild(data?.guild ?? data?.channel?.guild);
-						}
-						break;
-					case "statistics": {
-						setStatistics(data.statistics);
-						console.log(data.statistics);
-					}
-				}
-				// Handle incoming messages (e.g., bot status updates)
-			};
+			wss.on("statistics", async (statistics) => {
+				setStatistics(statistics);
+				setDuration({
+					current: statistics.timestamp?.current.label ?? "0:00",
+					total: statistics.timestamp?.total.label ?? "0:00",
+				});
+				console.log(statistics);
+			});
 
-			ws.onclose = () => {
-				console.log("WebSocket disconnected");
+			wss.on("disconnect", () => {
+				console.log("WebSocket disconnect");
 				setSocket(null);
 				toast({
 					title: "Disconnected",
 					description: "Lost connection to the music bot. Please refresh the page.",
 					variant: "destructive",
 				});
-			};
+			});
 
-			ws.onerror = (error) => {
+			wss.on("connect_error", (error) => {
 				console.error("WebSocket error:", error);
 				toast({
 					title: "Connection Error",
 					description: "Failed to connect to the music bot. Please try again later.",
 					variant: "destructive",
 				});
-			};
+			});
 
 			return () => {
-				if (ws.readyState === WebSocket.OPEN) {
-					ws.close();
+				if (wss.readyState === WebSocket.OPEN) {
+					wss.close();
 				}
 			};
 		}
-	}, [session, toast]);
+	}, [session]);
 
 	useEffect(() => {
 		setCurrentTrack(statistics.track);
@@ -114,7 +114,6 @@ export function MusicController() {
 
 	if (!mounted) return null;
 
-	const togglePlay = () => sendCommand("pause");
 	const handleVolumeChange = (e) => setVolume(e.target.value);
 	const handleSearch = (e) => setSearchQuery(e.target.value);
 	const toggleLyrics = () => setShowLyrics(!showLyrics);
@@ -122,10 +121,6 @@ export function MusicController() {
 	const sendCommand = (command) => {
 		if (socket && socket.readyState === WebSocket.OPEN && session.user.id) {
 			socket.send(JSON.stringify({ command, userID: session.user.id }));
-			// toast({
-			// 	title: "Command Sent",
-			// 	description: `Sent ${command} command to User ${session.user.username}`,
-			// });
 		} else {
 			toast({
 				title: "Error",
@@ -164,15 +159,19 @@ export function MusicController() {
 								<div
 									key={indexx}
 									className=' rounded-lg overflow-hidden shadow-md'>
-									<img
-										src={track.thumbnail}
-										alt={track.title}
-										className='w-full h-48 object-cover'
-									/>
-									<div className='p-4'>
-										<h3 className='font-semibold'>{track.title}</h3>
-										<p className='text-sm text-gray-600'>{track.artist}</p>
-										<div className='mt-2 flex justify-between items-center'>
+									<Card>
+										<CardHeader>
+											<CardTitle>{track.title}</CardTitle>
+											<CardDescription>{track.artist}</CardDescription>
+										</CardHeader>
+										<CardContent>
+											<img
+												src={track.thumbnail}
+												alt={track.title}
+												className='w-full h-48 object-cover'
+											/>
+										</CardContent>
+										<CardFooter>
 											<button className='text-indigo-600 hover:text-indigo-800'>
 												<FaPlay />
 											</button>
@@ -183,9 +182,9 @@ export function MusicController() {
 												<button className='text-gray-600 hover:text-gray-800'>
 													<FaShareAlt />
 												</button>
-											</div>
-										</div>
-									</div>
+											</div>{" "}
+										</CardFooter>
+									</Card>
 								</div>
 							))}
 						</div>
@@ -210,7 +209,7 @@ export function MusicController() {
 								</button>
 								<button
 									className='text-indigo-600 hover:text-indigo-800 text-3xl'
-									onClick={togglePlay}>
+									onClick={sendCommand("pause")}>
 									{isPlaying ? <FaPause /> : <FaPlay />}
 								</button>
 								<button className='text-gray-600 hover:text-gray-800'>
@@ -251,28 +250,6 @@ export function MusicController() {
 					)}
 				</aside>
 			</div>
-			{/* <div className='flex space-x-2'>
-				<Button
-					variant='outline'
-					onClick={() => sendCommand("play")}>
-					Play
-				</Button>
-				<Button
-					variant='outline'
-					onClick={() => sendCommand("pause")}>
-					Pause
-				</Button>
-				<Button
-					variant='outline'
-					onClick={() => sendCommand("skip")}>
-					Skip
-				</Button>
-				<Button
-					variant='outline'
-					onClick={() => sendCommand("stop")}>
-					Stop
-				</Button>
-			</div> */}
 		</div>
 	);
 }

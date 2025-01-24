@@ -1,12 +1,11 @@
 "use client";
 
 import { io } from "socket.io-client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
-
 import {
 	Card,
 	CardContent,
@@ -15,7 +14,6 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-
 import {
 	FaPlay,
 	FaPause,
@@ -32,55 +30,59 @@ import {
 import { Slider } from "./ui/slider";
 
 export function MusicController() {
-	const [socket, setSocket] = useState(null);
-	const [guild, setGuild] = useState("");
-	const [voiceChannels, setVoiceChannels] = useState([]);
-	const [statistics, setStatistics] = useState({});
-	const [duration, setDuration] = useState({
-		current: "0:00",
-		total: "0:00",
+	const [socketInstance, setSocketInstance] = useState(null);
+	const [voiceChannel, setVoiceChannel] = useState(null);
+	const [guildInfo, setGuildInfo] = useState(null);
+	const [playerStats, setPlayerStats] = useState({
+		currentTrack: null,
+		playlist: [],
+		isPlaying: false,
+		volume: 50,
+		duration: {
+			current: "0:00",
+			total: "0:00",
+		},
 	});
+	const [searchQuery, setSearchQuery] = useState("");
+	const [showLyrics, setShowLyrics] = useState(false);
 	const { data: session, status } = useSession();
 	const { toast } = useToast();
 
-	const [currentTrack, setCurrentTrack] = useState(null);
-	const [isPlaying, setIsPlaying] = useState(false);
-	const [volume, setVolume] = useState(50);
-	const [searchQuery, setSearchQuery] = useState("");
-	const [playlist, setPlaylist] = useState([]);
-	const [showLyrics, setShowLyrics] = useState(false);
-	const [mounted, setMounted] = useState(false);
-
+	// Initialize Socket.IO connection
 	useEffect(() => {
-		if (session) {
-			const wss = new io("http://localhost:2003", {
+		if (session?.accessToken) {
+			const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL, {
 				auth: {
 					token: session.accessToken,
 				},
 			});
-			wss.on("connect", () => {
-				console.log("WebSocket connected");
-				setSocket(socket);
-				wss.emit("GetVoice", session.user.id);
+
+			socket.on("connect", () => {
+				console.log("Socket connected");
+				setSocketInstance(socket);
+				socket.emit("GetVoice", session.user.id);
 			});
 
-			wss.on("ReplyVoice", (data) => {
-				setVoiceChannels(data.channel);
-				setGuild(data.guild);
+			socket.on("ReplyVoice", (data) => {
+				setVoiceChannel(data.channel);
+				setGuildInfo(data.guild);
 			});
 
-			wss.on("statistics", async (statistics) => {
-				setStatistics(statistics);
-				setDuration({
-					current: statistics.timestamp?.current.label ?? "0:00",
-					total: statistics.timestamp?.total.label ?? "0:00",
+			socket.on("statistics", (stats) => {
+				setPlayerStats({
+					currentTrack: stats.track,
+					playlist: stats.queue || [],
+					isPlaying: !stats.paused,
+					volume: stats.volume,
+					duration: {
+						current: stats.timestamp?.current.label || "0:00",
+						total: stats.timestamp?.total.label || "0:00",
+					},
 				});
-				console.log(statistics);
 			});
 
-			wss.on("disconnect", () => {
-				console.log("WebSocket disconnect");
-				setSocket(null);
+			socket.on("disconnect", () => {
+				console.log("Socket disconnected");
 				toast({
 					title: "Disconnected",
 					description: "Lost connection to the music bot. Please refresh the page.",
@@ -88,47 +90,41 @@ export function MusicController() {
 				});
 			});
 
-			wss.on("connect_error", (error) => {
-				console.error("WebSocket error:", error);
-				toast({
-					title: "Connection Error",
-					description: "Failed to connect to the music bot. Please try again later.",
-					variant: "destructive",
-				});
-			});
-
 			return () => {
-				if (wss.readyState === WebSocket.OPEN) {
-					wss.close();
+				if (socket) {
+					socket.disconnect();
 				}
 			};
 		}
-	}, [session]);
+	}, [session, toast]);
 
-	useEffect(() => {
-		setCurrentTrack(statistics.track);
-		setPlaylist(statistics.queue);
-		setMounted(true);
-		setIsPlaying(!statistics.paused);
-	}, [statistics]);
+	const sendCommand = useCallback(
+		(command) => {
+			if (socketInstance?.connected && session?.user.id) {
+				socketInstance.emit(command, { userID: session.user.id });
+				toast({
+					title: "Command Sent",
+					description: `Sent ${command} command`,
+				});
+			} else {
+				toast({
+					title: "Error",
+					description: "Not connected to voice channel",
+					variant: "destructive",
+				});
+			}
+		},
+		[socketInstance, session, toast],
+	);
 
-	if (!mounted) return null;
-
-	const handleVolumeChange = (e) => setVolume(e.target.value);
-	const handleSearch = (e) => setSearchQuery(e.target.value);
-	const toggleLyrics = () => setShowLyrics(!showLyrics);
-
-	const sendCommand = (command) => {
-		if (socket && socket.readyState === WebSocket.OPEN && session.user.id) {
-			socket.send(JSON.stringify({ command, userID: session.user.id }));
-		} else {
-			toast({
-				title: "Error",
-				description: "Please select a voice channel and ensure you're connected",
-				variant: "destructive",
-			});
-		}
-	};
+	const handleVolumeChange = useCallback(
+		(value) => {
+			if (socketInstance?.connected) {
+				socketInstance.emit("volume", value[0]);
+			}
+		},
+		[socketInstance],
+	);
 
 	if (status === "loading") {
 		return <p>Loading...</p>;
@@ -140,113 +136,147 @@ export function MusicController() {
 
 	return (
 		<div className='space-y-4'>
-			<div className='flex space-x-2'>
+			<div className='flex space-x-4'>
 				<section className='w-full md:w-2/3 rounded-lg shadow-lg p-6'>
 					<div className='mb-6 relative'>
 						<Input
 							type='text'
 							placeholder='Search for music...'
-							className='w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-400'
 							value={searchQuery}
-							onChange={handleSearch}
+							onChange={(e) => setSearchQuery(e.target.value)}
+							className='pr-10'
 						/>
-						<FaSearch className='absolute top-3 right-3 text-gray-400' />
+						<FaSearch className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400' />
 					</div>
+
 					<h2 className='text-xl font-semibold mb-4'>Queue</h2>
-					<div className='max-h-[630px] overflow-y-auto'>
-						<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
-							{playlist?.map((track, indexx) => (
-								<div
-									key={indexx}
-									className=' rounded-lg overflow-hidden shadow-md'>
-									<Card>
-										<CardHeader>
-											<CardTitle>{track.title}</CardTitle>
-											<CardDescription>{track.artist}</CardDescription>
-										</CardHeader>
-										<CardContent>
-											<img
-												src={track.thumbnail}
-												alt={track.title}
-												className='w-full h-48 object-cover'
-											/>
-										</CardContent>
-										<CardFooter>
-											<button className='text-indigo-600 hover:text-indigo-800'>
-												<FaPlay />
-											</button>
-											<div>
-												<button className='text-gray-600 hover:text-gray-800 mr-2'>
-													<FaHeart />
-												</button>
-												<button className='text-gray-600 hover:text-gray-800'>
-													<FaShareAlt />
-												</button>
-											</div>{" "}
-										</CardFooter>
-									</Card>
-								</div>
-							))}
-						</div>
+					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[630px] overflow-y-auto'>
+						{playerStats.playlist.map((track, index) => (
+							<Card
+								key={index}
+								className='overflow-hidden'>
+								<CardHeader className='p-4'>
+									<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
+									<CardDescription className='text-xs'>{track.duration}</CardDescription>
+								</CardHeader>
+								<CardContent className='p-0'>
+									<img
+										src={track.thumbnail || "/placeholder.svg"}
+										alt={track.title}
+										className='w-full h-32 object-cover'
+									/>
+								</CardContent>
+								<CardFooter className='p-4 flex justify-between'>
+									<Button
+										variant='ghost'
+										size='icon'
+										onClick={() => sendCommand("play")}>
+										<FaPlay className='h-4 w-4' />
+									</Button>
+									<div className='flex gap-2'>
+										<Button
+											variant='ghost'
+											size='icon'>
+											<FaHeart className='h-4 w-4' />
+										</Button>
+										<Button
+											variant='ghost'
+											size='icon'>
+											<FaShareAlt className='h-4 w-4' />
+										</Button>
+									</div>
+								</CardFooter>
+							</Card>
+						))}
 					</div>
 				</section>
 
-				<aside className='w-full md:w-1/3  rounded-lg shadow-lg p-6'>
-					<h2 className='text-xl font-semibold mb-4'>Now Playing at {voiceChannels?.name}</h2>
-					{currentTrack && (
+				<aside className='w-full md:w-1/3 rounded-lg shadow-lg p-6'>
+					<h2 className='text-xl font-semibold mb-4'>
+						Now Playing {voiceChannel && `in ${voiceChannel.name}`}
+					</h2>
+					{playerStats.currentTrack ? (
 						<div className='text-center'>
 							<img
-								src={currentTrack.thumbnail}
-								alt={currentTrack.title}
+								src={playerStats.currentTrack.thumbnail || "/placeholder.svg"}
+								alt={playerStats.currentTrack.title}
 								className='w-full h-64 object-cover rounded-lg mb-4'
 							/>
-							<h3 className='text-lg font-semibold'>{currentTrack.title}</h3>
-							<p className='text-gray-600'>{currentTrack.artist}</p>
-							<p className='text-sm text-gray-500 mb-4'>{currentTrack.album}</p>
-							<div className='flex justify-center items-center space-x-4 mb-4'>
-								<button className='text-gray-600 hover:text-gray-800'>
-									<FaStepBackward />
-								</button>
-								<button
-									className='text-indigo-600 hover:text-indigo-800 text-3xl'
-									onClick={sendCommand("pause")}>
-									{isPlaying ? <FaPause /> : <FaPlay />}
-								</button>
-								<button className='text-gray-600 hover:text-gray-800'>
-									<FaStepForward />
-								</button>
+							<h3 className='text-lg font-semibold line-clamp-1'>
+								{playerStats.currentTrack.title}
+							</h3>
+							<p className='text-sm text-muted-foreground mb-4'>
+								{playerStats.duration.current} / {playerStats.duration.total}
+							</p>
+
+							<div className='flex justify-center items-center space-x-4 mb-6'>
+								<Button
+									variant='ghost'
+									size='icon'
+									onClick={() => sendCommand("back")}>
+									<FaStepBackward className='h-4 w-4' />
+								</Button>
+								<Button
+									variant='ghost'
+									size='icon'
+									onClick={() => sendCommand("pause")}>
+									{playerStats.isPlaying ? (
+										<FaPause className='h-4 w-4' />
+									) : (
+										<FaPlay className='h-4 w-4' />
+									)}
+								</Button>
+								<Button
+									variant='ghost'
+									size='icon'
+									onClick={() => sendCommand("skip")}>
+									<FaStepForward className='h-4 w-4' />
+								</Button>
 							</div>
-							<div className='flex items-center mb-4'>
-								<FaVolumeUp className='text-gray-600 mr-2' />
-								<Input
-									type='range'
-									min='0'
-									max='100'
-									value={volume}
-									onChange={handleVolumeChange}
-									className='w-full'
-								/>
+
+							<div className='space-y-2'>
+								<div className='flex items-center gap-2'>
+									<FaVolumeUp className='h-4 w-4' />
+									<Slider
+										variant='ghost'
+										value={[playerStats.volume]}
+										onValueChange={handleVolumeChange}
+										max={100}
+										step={1}
+									/>
+								</div>
 							</div>
-							<div className='mt-4 flex justify-center space-x-4'>
-								<button className='text-gray-600 hover:text-gray-800'>
-									<FaRandom />
-								</button>
-								<button className='text-gray-600 hover:text-gray-800'>
-									<FaRedo />
-								</button>
-								<button
-									className='text-gray-600 hover:text-gray-800'
-									onClick={toggleLyrics}>
-									<FaMusic />
-								</button>
+
+							<div className='flex justify-center space-x-2 mt-4'>
+								<Button
+									variant='ghost'
+									size='icon'
+									onClick={() => sendCommand("shuffle")}>
+									<FaRandom className='h-4 w-4' />
+								</Button>
+								<Button
+									variant='ghost'
+									size='icon'
+									onClick={() => sendCommand("loop")}>
+									<FaRedo className='h-4 w-4' />
+								</Button>
+								<Button
+									variant='ghost'
+									size='icon'
+									onClick={() => setShowLyrics(!showLyrics)}>
+									<FaMusic className='h-4 w-4' />
+								</Button>
 							</div>
-							{showLyrics && (
-								<div className='mt-6 p-4 rounded-lg max-h-64 overflow-y-auto'>
+
+							{showLyrics && playerStats.currentTrack.lyrics && (
+								<div className='mt-6 p-4 rounded-lg bg-muted max-h-64 overflow-y-auto'>
 									<h4 className='font-semibold mb-2'>Lyrics</h4>
-									<p className='whitespace-pre-line text-sm text-gray-700'>{currentTrack.lyrics}</p>
+									<p className='whitespace-pre-line text-sm'>{playerStats.currentTrack.lyrics}</p>
 								</div>
 							)}
 						</div>
+					) : (
+						<p className='text-center text-muted-foreground'>No track currently playing</p>
 					)}
 				</aside>
 			</div>

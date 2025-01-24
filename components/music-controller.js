@@ -1,7 +1,7 @@
 "use client";
 
 import { io } from "socket.io-client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
@@ -26,8 +26,14 @@ import {
 	FaRandom,
 	FaRedo,
 	FaMusic,
+	FaTrash,
 } from "react-icons/fa";
+
+import { FaXmark } from "react-icons/fa6";
+
 import { Slider } from "./ui/slider";
+import { Progress } from "./ui/progress";
+import { ScrollArea } from "./ui/scroll-area";
 
 export function MusicController() {
 	const [socketInstance, setSocketInstance] = useState(null);
@@ -39,16 +45,19 @@ export function MusicController() {
 		isPlaying: false,
 		volume: 50,
 		duration: {
-			current: "0:00",
-			total: "0:00",
+			current: 0,
+			total: 0,
 		},
+		repeatMode: 0,
+		shuffle: false,
 	});
 	const [searchQuery, setSearchQuery] = useState("");
+	const [searchResults, setSearchResults] = useState([]);
 	const [showLyrics, setShowLyrics] = useState(false);
 	const { data: session, status } = useSession();
 	const { toast } = useToast();
+	const progressInterval = useRef(null);
 
-	// Initialize Socket.IO connection
 	useEffect(() => {
 		if (session?.accessToken) {
 			const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL, {
@@ -75,9 +84,11 @@ export function MusicController() {
 					isPlaying: !stats.paused,
 					volume: stats.volume,
 					duration: {
-						current: stats.timestamp?.current.label || "0:00",
-						total: stats.timestamp?.total.label || "0:00",
+						current: stats.timestamp?.current?.current?.value ?? 0,
+						total: stats.timestamp?.total ?? 0,
 					},
+					repeatMode: stats.repeatMode,
+					shuffle: stats.shuffle,
 				});
 			});
 
@@ -98,10 +109,28 @@ export function MusicController() {
 		}
 	}, [session, toast]);
 
+	useEffect(() => {
+		if (playerStats.isPlaying) {
+			progressInterval.current = setInterval(() => {
+				setPlayerStats((prev) => ({
+					...prev,
+					duration: {
+						...prev.duration,
+						current: Math.min(prev.duration.current + 1000, prev.duration.total),
+					},
+				}));
+			}, 1000);
+		} else {
+			clearInterval(progressInterval.current);
+		}
+
+		return () => clearInterval(progressInterval.current);
+	}, [playerStats.isPlaying]);
+
 	const sendCommand = useCallback(
-		(command) => {
+		(command, payload = {}) => {
 			if (socketInstance?.connected && session?.user.id) {
-				socketInstance.emit(command, { userID: session.user.id });
+				socketInstance.emit(command, { userID: session.user.id, ...payload });
 				toast({
 					title: "Command Sent",
 					description: `Sent ${command} command`,
@@ -117,14 +146,52 @@ export function MusicController() {
 		[socketInstance, session, toast],
 	);
 
-	const handleVolumeChange = useCallback(
+	const handleVolumeCommit = useCallback(
 		(value) => {
-			if (socketInstance?.connected) {
-				socketInstance.emit("volume", value[0]);
-			}
+			sendCommand("volume", { volume: value[0] });
 		},
-		[socketInstance],
+		[sendCommand],
 	);
+
+	const handleSearch = useCallback(async () => {
+		try {
+			console.log(
+				`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/api/search?query=${encodeURIComponent(
+					searchQuery,
+				)}`,
+			);
+			const response = await fetch(
+				`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/api/search?query=${encodeURIComponent(
+					searchQuery,
+				)}`,
+			);
+
+			if (!response.ok) throw new Error("Search failed");
+			const data = await response.json();
+			setSearchResults(data);
+		} catch (error) {
+			console.error("Search error:", error);
+			toast({
+				title: "Search Error",
+				description: "Failed to perform search. Please try again.",
+				variant: "destructive",
+			});
+		}
+	}, [searchQuery, toast]);
+
+	const handleSearchCancel = () => {
+		setSearchResults([]);
+	};
+	const formatTime = (ms) => {
+		const seconds = Math.floor((ms / 1000) % 60);
+		const minutes = Math.floor((ms / (1000 * 60)) % 60);
+		const hours = Math.floor((ms / (1000 * 60 * 60)) % 24);
+		return [
+			hours.toString().padStart(2, "0"),
+			minutes.toString().padStart(2, "0"),
+			seconds.toString().padStart(2, "0"),
+		].join(":");
+	};
 
 	if (status === "loading") {
 		return <p>Loading...</p>;
@@ -135,150 +202,234 @@ export function MusicController() {
 	}
 
 	return (
-		<div className='space-y-4'>
-			<div className='flex space-x-4'>
-				<section className='w-full md:w-2/3 rounded-lg shadow-lg p-6'>
-					<div className='mb-6 relative'>
-						<Input
-							type='text'
-							placeholder='Search for music...'
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className='pr-10'
-						/>
-						<FaSearch className='absolute right-3 top-1/2 -translate-y-1/2 text-gray-400' />
-					</div>
+		<div className='grid grid-cols-1 md:grid-cols-3 gap-6 p-6'>
+			<div className='md:col-span-2 space-y-6'>
+				<Card className='backdrop-blur-sm bg-background/80 dark:bg-background/40'>
+					<CardHeader>
+						<div className='relative'>
+							<Input
+								type='text'
+								placeholder='Search for music...'
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								onKeyPress={(event) => {
+									if (event.key === "Enter") {
+										return handleSearch();
+									}
+								}}
+								className='pr-10'
+							/>
+							{searchResults.length <= 0 ? (
+								<Button
+									size='sm'
+									variant='ghost'
+									className='absolute right-0 top-1/2 transform -translate-y-1/2'
+									onClick={handleSearch}>
+									<FaSearch className='h-4 w-4' />
+								</Button>
+							) : (
+								<Button
+									size='sm'
+									variant='ghost'
+									className='absolute right-0 top-1/2 transform -translate-y-1/2'
+									onClick={handleSearchCancel}>
+									<FaXmark className='h-4 w-4' />
+								</Button>
+							)}
+						</div>
+					</CardHeader>
+					{searchResults.length > 0 && (
+						<CardContent>
+							<h3 className='text-lg font-semibold mb-4'>Search Results</h3>
+							<ScrollArea className='h-[624px] pr-4'>
+								<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
+									{searchResults.map((track, index) => (
+										<Card
+											key={index}
+											className='backdrop-blur-sm bg-background/80 dark:bg-background/40 flex'>
+											<img
+												src={track.thumbnail || "/placeholder.svg"}
+												alt={track.title}
+												className='w-24 h-24 object-cover'
+											/>
+											<div className='flex-1 p-4'>
+												<h4 className='font-medium line-clamp-1'>{track.title}</h4>
+												<p className='text-sm text-muted-foreground'>{track.duration}</p>
+												<div className='flex gap-2 mt-2'>
+													<Button
+														size='sm'
+														variant='ghost'
+														onClick={() => sendCommand("play", { trackUrl: track.url })}>
+														<FaPlay className='h-4 w-4' />
+													</Button>
+													<Button
+														size='sm'
+														variant='ghost'>
+														<FaHeart className='h-4 w-4' />
+													</Button>
+												</div>
+											</div>
+										</Card>
+									))}
+								</div>
+							</ScrollArea>
+						</CardContent>
+					)}
+				</Card>
 
-					<h2 className='text-xl font-semibold mb-4'>Queue</h2>
-					<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[630px] overflow-y-auto'>
-						{playerStats.playlist.map((track, index) => (
-							<Card
-								key={index}
-								className='overflow-hidden'>
-								<CardHeader className='p-4'>
-									<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
-									<CardDescription className='text-xs'>{track.duration}</CardDescription>
-								</CardHeader>
-								<CardContent className='p-0'>
+				<Card className='backdrop-blur-sm bg-background/80 dark:bg-background/40'>
+					<CardHeader>
+						<CardTitle>Queue</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<ScrollArea className='h-[576px] pr-4'>
+							<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto'>
+								{playerStats.playlist.map((track, index) => (
+									<Card
+										key={index}
+										className='overflow-hidden'>
+										<CardContent className='p-0'>
+											<img
+												src={track.thumbnail || "/placeholder.svg"}
+												alt={track.title}
+												className='w-full h-32 object-cover'
+											/>
+										</CardContent>
+										<CardHeader className='p-4'>
+											<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
+											<CardDescription className='text-xs'>{track.duration}</CardDescription>
+										</CardHeader>
+
+										<CardFooter className='p-4 flex justify-between'>
+											<Button
+												variant='ghost'
+												size='icon'
+												onClick={() => sendCommand("play", { index })}>
+												<FaPlay className='h-4 w-4' />
+											</Button>
+											<div className='flex gap-2'>
+												<Button
+													variant='ghost'
+													size='icon'>
+													<FaTrash className='h-4 w-4' />
+												</Button>
+												<Button
+													variant='ghost'
+													size='icon'>
+													<FaShareAlt className='h-4 w-4' />
+												</Button>
+											</div>
+										</CardFooter>
+									</Card>
+								))}
+							</div>
+						</ScrollArea>
+					</CardContent>
+				</Card>
+			</div>
+
+			<div className='md:col-span-1'>
+				<Card className='sticky top-6 backdrop-blur-sm bg-background/80 dark:bg-background/40'>
+					<CardHeader>
+						<CardTitle>Now Playing {voiceChannel && `in ${voiceChannel.name}`}</CardTitle>
+					</CardHeader>
+					<CardContent>
+						{playerStats.currentTrack ? (
+							<div className='space-y-6'>
+								<div className='aspect-square relative rounded-lg overflow-hidden'>
 									<img
-										src={track.thumbnail || "/placeholder.svg"}
-										alt={track.title}
-										className='w-full h-32 object-cover'
+										src={playerStats.currentTrack.thumbnail || session.user?.image_url}
+										alt={playerStats.currentTrack.title}
+										className='object-cover w-full h-full'
 									/>
-								</CardContent>
-								<CardFooter className='p-4 flex justify-between'>
+								</div>
+
+								<div className='space-y-2 text-center'>
+									<h3 className='font-semibold line-clamp-1'>{playerStats.currentTrack.title}</h3>
+									<p className='text-sm text-muted-foreground'>
+										{formatTime(playerStats.duration.current)} /{" "}
+										{formatTime(playerStats.duration.total)}
+									</p>
+								</div>
+
+								<Progress
+									value={(playerStats.duration.current / playerStats.duration.total) * 100}
+								/>
+
+								<div className='flex justify-center items-center gap-4'>
 									<Button
 										variant='ghost'
 										size='icon'
-										onClick={() => sendCommand("play")}>
-										<FaPlay className='h-4 w-4' />
+										onClick={() => sendCommand("back")}>
+										<FaStepBackward className='h-4 w-4' />
 									</Button>
-									<div className='flex gap-2'>
-										<Button
-											variant='ghost'
-											size='icon'>
-											<FaHeart className='h-4 w-4' />
-										</Button>
-										<Button
-											variant='ghost'
-											size='icon'>
-											<FaShareAlt className='h-4 w-4' />
-										</Button>
-									</div>
-								</CardFooter>
-							</Card>
-						))}
-					</div>
-				</section>
-
-				<aside className='w-full md:w-1/3 rounded-lg shadow-lg p-6'>
-					<h2 className='text-xl font-semibold mb-4'>
-						Now Playing {voiceChannel && `in ${voiceChannel.name}`}
-					</h2>
-					{playerStats.currentTrack ? (
-						<div className='text-center'>
-							<img
-								src={playerStats.currentTrack.thumbnail || "/placeholder.svg"}
-								alt={playerStats.currentTrack.title}
-								className='w-full h-64 object-cover rounded-lg mb-4'
-							/>
-							<h3 className='text-lg font-semibold line-clamp-1'>
-								{playerStats.currentTrack.title}
-							</h3>
-							<p className='text-sm text-muted-foreground mb-4'>
-								{playerStats.duration.current} / {playerStats.duration.total}
-							</p>
-
-							<div className='flex justify-center items-center space-x-4 mb-6'>
-								<Button
-									variant='ghost'
-									size='icon'
-									onClick={() => sendCommand("back")}>
-									<FaStepBackward className='h-4 w-4' />
-								</Button>
-								<Button
-									variant='ghost'
-									size='icon'
-									onClick={() => sendCommand("pause")}>
-									{playerStats.isPlaying ? (
-										<FaPause className='h-4 w-4' />
-									) : (
-										<FaPlay className='h-4 w-4' />
-									)}
-								</Button>
-								<Button
-									variant='ghost'
-									size='icon'
-									onClick={() => sendCommand("skip")}>
-									<FaStepForward className='h-4 w-4' />
-								</Button>
-							</div>
-
-							<div className='space-y-2'>
-								<div className='flex items-center gap-2'>
-									<FaVolumeUp className='h-4 w-4' />
-									<Slider
+									<Button
+										variant='default'
+										size='icon'
+										onClick={() => sendCommand("pause")}>
+										{playerStats.isPlaying ? (
+											<FaPause className='h-4 w-4' />
+										) : (
+											<FaPlay className='h-4 w-4' />
+										)}
+									</Button>
+									<Button
 										variant='ghost'
-										value={[playerStats.volume]}
-										onValueChange={handleVolumeChange}
-										max={100}
-										step={1}
-									/>
+										size='icon'
+										onClick={() => sendCommand("skip")}>
+										<FaStepForward className='h-4 w-4' />
+									</Button>
 								</div>
-							</div>
 
-							<div className='flex justify-center space-x-2 mt-4'>
-								<Button
-									variant='ghost'
-									size='icon'
-									onClick={() => sendCommand("shuffle")}>
-									<FaRandom className='h-4 w-4' />
-								</Button>
-								<Button
-									variant='ghost'
-									size='icon'
-									onClick={() => sendCommand("loop")}>
-									<FaRedo className='h-4 w-4' />
-								</Button>
-								<Button
-									variant='ghost'
-									size='icon'
-									onClick={() => setShowLyrics(!showLyrics)}>
-									<FaMusic className='h-4 w-4' />
-								</Button>
-							</div>
-
-							{showLyrics && playerStats.currentTrack.lyrics && (
-								<div className='mt-6 p-4 rounded-lg bg-muted max-h-64 overflow-y-auto'>
-									<h4 className='font-semibold mb-2'>Lyrics</h4>
-									<p className='whitespace-pre-line text-sm'>{playerStats.currentTrack.lyrics}</p>
+								<div className='space-y-2'>
+									<div className='flex items-center gap-2'>
+										<FaVolumeUp className='h-4 w-4' />
+										<Slider
+											value={[playerStats.volume]}
+											onValueChange={handleVolumeCommit}
+											max={100}
+											step={1}
+										/>
+									</div>
 								</div>
-							)}
-						</div>
-					) : (
-						<p className='text-center text-muted-foreground'>No track currently playing</p>
-					)}
-				</aside>
+
+								<div className='flex justify-center gap-2'>
+									<Button
+										variant={playerStats.shuffle ? "default" : "ghost"}
+										size='icon'
+										onClick={() => sendCommand("shuffle")}>
+										<FaRandom className='h-4 w-4' />
+									</Button>
+									<Button
+										variant={playerStats.repeatMode !== 0 ? "default" : "ghost"}
+										size='icon'
+										onClick={() => sendCommand("loop", { mode: (playerStats.repeatMode + 1) % 3 })}>
+										<FaRedo className='h-4 w-4' />
+									</Button>
+									<Button
+										variant={showLyrics ? "default" : "ghost"}
+										size='icon'
+										onClick={() => setShowLyrics(!showLyrics)}>
+										<FaMusic className='h-4 w-4' />
+									</Button>
+								</div>
+
+								{showLyrics && playerStats.currentTrack.lyrics && (
+									<ScrollArea className='h-[200px]'>
+										<div className='space-y-2'>
+											<h4 className='font-semibold'>Lyrics</h4>
+											<p className='whitespace-pre-line text-sm'>
+												{playerStats.currentTrack.lyrics?.plainLyrics}
+											</p>
+										</div>
+									</ScrollArea>
+								)}
+							</div>
+						) : (
+							<div className='text-center text-muted-foreground'>No track currently playing</div>
+						)}
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

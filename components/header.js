@@ -2,6 +2,7 @@
 
 import { LoginButton } from "./login-button";
 import { ThemeToggle } from "./theme-toggle";
+import { ColorTheme } from "./color-theme";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -9,7 +10,7 @@ export function Header() {
 	const { data: session } = useSession();
 
 	return (
-		<header className='border-b'>
+		<header className='border-b border-[hsl(var(--primary))] backdrop-blur-sm bg-background/190 dark:bg-background/10'>
 			<div className='container mx-auto py-4 flex justify-between items-center'>
 				<h1 className='text-2xl font-bold'>Discord Music Bot Controller</h1>
 				<div className='flex items-center space-x-4'>
@@ -26,6 +27,7 @@ export function Header() {
 						</div>
 					)}
 					<LoginButton />
+					<ColorTheme />
 					<ThemeToggle />
 				</div>
 			</div>

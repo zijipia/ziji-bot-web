@@ -34,6 +34,7 @@ import { FaXmark } from "react-icons/fa6";
 import { Slider } from "./ui/slider";
 import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
+import AudioSpectrum from "./audio-spectrum";
 
 export function MusicController() {
 	const [socketInstance, setSocketInstance] = useState(null);
@@ -248,7 +249,7 @@ export function MusicController() {
 											key={index}
 											className='backdrop-blur-sm bg-background/80 dark:bg-background/40 flex'>
 											<img
-												src={track.thumbnail || "/placeholder.svg"}
+												src={track.thumbnail || session.user?.image_url}
 												alt={track.title}
 												className='w-24 h-24 object-cover'
 											/>
@@ -290,7 +291,7 @@ export function MusicController() {
 										className='overflow-hidden'>
 										<CardContent className='p-0'>
 											<img
-												src={track.thumbnail || "/placeholder.svg"}
+												src={track.thumbnail || session.user?.image_url}
 												alt={track.title}
 												className='w-full h-32 object-cover'
 											/>
@@ -413,7 +414,7 @@ export function MusicController() {
 										<FaMusic className='h-4 w-4' />
 									</Button>
 								</div>
-
+								<AudioSpectrum audioSrc='' />
 								{showLyrics && playerStats.currentTrack.lyrics && (
 									<ScrollArea className='h-[200px]'>
 										<div className='space-y-2'>

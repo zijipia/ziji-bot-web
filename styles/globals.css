@@ -70,3 +70,16 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+.audio-spectrum {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+canvas {
+	border: 1px solid white;
+	background: black;
+	margin-top: 10px;
+}

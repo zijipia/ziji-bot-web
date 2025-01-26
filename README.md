@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# 🎵 Discord Music Bot Web Controller
 
-## Getting Started
+## Overview
 
-First, run the development server:
+Welcome to the **Discord Music Bot Web Controller**! 🎶 Dive into a world where you can orchestrate
+your favorite tunes on Discord with just a few clicks. This web application offers a sleek and
+responsive interface to seamlessly control the
+[Ziji music bot](https://github.com/zijipia/Ziji-bot-discord) on Discord. Built with the
+cutting-edge technologies of Next.js and Express.js, and powered by the Discord API, this project
+promises an unparalleled music control experience for all Discord enthusiasts.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **🔐 User Authentication**: Experience secure and hassle-free login using your Discord
+  credentials.
+- **⏯️ Real-time Control**: Command your music bot with precision—pause, play, skip, and more, all
+  in real-time.
+- **📜 Queue Management**: Effortlessly view and curate your playlist to perfection.
+- **🔍 Search Functionality**: Discover new tracks and enrich your queue with ease.
+- **🔊 Voice Channel Integration**: Stay informed with real-time voice channel updates.
+- **📱 Responsive Design**: Enjoy a seamless experience across all devices, be it desktop or mobile.
+- **🎨 Theme Customization**: Personalize your interface with a variety of color themes and toggle
+  between light/dark modes.
+- **🔈 Volume Control**: Fine-tune the music bot's volume to suit your mood.
+- **⏱️ Track Progress**: Keep track of your music journey with intuitive progress controls.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Technologies Used
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- **Frontend**:
+  - Next.js
+  - React
+  - Tailwind CSS
+  - shadcn/ui components
+- **Backend**:
+  - Express.js
+  - Socket.IO for real-time communication
+  - discord-player for music playback
+- **Authentication**:
+  - NextAuth.js with Discord provider
+- **Other**:
+  - TypeScript
+  - Node.js
 
-## Learn More
+## Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+Before you embark on this musical journey, ensure you have the following:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Node.js (v14 or newer)
+- npm or yarn
+- A Discord account and a registered Discord application
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Setup and Installation
 
-## Deploy on Vercel
+1. Clone the repository:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+   ```bash
+   git clone https://github.com/zijipia/ziji-bot-web.git
+   cd ziji-bot-web
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+2. Install dependencies:
+
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Create a `.env.local` file in the root directory of the project and add the necessary environment
+   variables:
+
+   ```plaintext
+   DISCORD_CLIENT_ID=your_discord_client_id
+   DISCORD_CLIENT_SECRET=your_discord_client_secret
+   NEXTAUTH_URL=your_nextauth_url (http://localhost:3000)
+   NEXT_PUBLIC_WEBSOCKET_URL=your_websocket_url (http://localhost:2003)
+   NEXTAUTH_SECRET=your_nextauth_secret
+   ```
+
+4. Run the application:
+
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   npm run build
+   npm run start
+   ```
+
+5. Open your browser and go to `http://localhost:3000` to start using the application.
+
+## Contributing
+
+Join us in making this project even better! Create a new branch, implement your changes, and submit
+a pull request. We welcome your creativity and contributions!
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.

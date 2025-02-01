@@ -12,7 +12,7 @@ export function Header() {
 	return (
 		<header className='border-b border-[hsl(var(--primary))] backdrop-blur-sm bg-background/190 dark:bg-background/10'>
 			<div className='container mx-auto py-4 flex justify-between items-center'>
-				<h1 className='text-2xl font-bold'>Discord Music Bot Controller</h1>
+				<h1 className='text-2xl font-bold'>Music Controller</h1>
 				<div className='flex items-center space-x-4'>
 					{session && (
 						<div className='flex items-center space-x-2'>

@@ -60,10 +60,15 @@ export function MusicController() {
 
 	useEffect(() => {
 		if (session?.accessToken) {
-			const socket = io(process.env.NEXT_PUBLIC_WEBSOCKET_URL, {
+			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL.replace("http://", "ws://");
+			const socket = io(wsUrl, {
 				auth: {
 					token: session.accessToken,
 				},
+				transports: ["websocket"],
+				rejectUnauthorized: false,
+				secure: false,
+				withCredentials: false,
 			});
 
 			socket.on("connect", () => {
@@ -155,25 +160,25 @@ export function MusicController() {
 
 	const handleSearch = useCallback(async () => {
 		try {
-			console.log(
-				`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/api/search?query=${encodeURIComponent(
-					searchQuery,
-				)}`,
-			);
-			const response = await fetch(
-				`${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/api/search?query=${encodeURIComponent(
-					searchQuery,
-				)}`,
-			);
+			const searchUrl = `${
+				process.env.NEXT_PUBLIC_WEBSOCKET_URL
+			}/api/search?query=${encodeURIComponent(searchQuery)}`;
+			const proxyUrl = `/api/proxy?url=${encodeURIComponent(searchUrl)}`;
 
-			if (!response.ok) throw new Error("Search failed");
+			const response = await fetch(proxyUrl);
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(errorData.error || "Search failed");
+			}
+
 			const data = await response.json();
 			setSearchResults(data);
 		} catch (error) {
 			console.error("Search error:", error);
 			toast({
 				title: "Search Error",
-				description: "Failed to perform search. Please try again.",
+				description: error.message || "Failed to perform search. Please try again.",
 				variant: "destructive",
 			});
 		}

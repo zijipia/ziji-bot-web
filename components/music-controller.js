@@ -60,15 +60,17 @@ export function MusicController() {
 
 	useEffect(() => {
 		if (session?.accessToken) {
-			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL.replace("http://", "ws://");
+			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL.replace("http://", "wss://");
+			console.log("Connecting to WebSocket:", wsUrl);
+
 			const socket = io(wsUrl, {
 				auth: {
 					token: session.accessToken,
 				},
 				transports: ["websocket"],
+				secure: true,
 				rejectUnauthorized: false,
-				secure: false,
-				withCredentials: false,
+				withCredentials: true,
 			});
 
 			socket.on("connect", () => {

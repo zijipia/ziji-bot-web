@@ -60,11 +60,7 @@ export function MusicController() {
 
 	useEffect(() => {
 		if (session?.accessToken) {
-			let wsUrl
-			if (process.env.USE_HTTPS === 'true') wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
-			else wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL
-				.replace("http://", "ws://")
-				.replace("https://", "wss://");
+			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
 			console.log("Connecting to WebSocket:", wsUrl);
 
 			const socket = io(wsUrl, {

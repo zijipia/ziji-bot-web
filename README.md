@@ -75,6 +75,7 @@ Before you embark on this musical journey, ensure you have the following:
    NEXTAUTH_URL=your_nextauth_url (http://localhost:3000)
    NEXT_PUBLIC_WEBSOCKET_URL=your_websocket_url (http://localhost:2003)
    NEXTAUTH_SECRET=your_nextauth_secret
+   USE_HTTPS=true/false (this will replace http to ws in your websocket url)
    ```
 
 4. Run the application:

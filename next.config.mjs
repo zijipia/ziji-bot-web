@@ -4,8 +4,8 @@ const nextConfig = {
 	async rewrites() {
 		return [
 			{
-				source: "/ws",
-				destination: process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+				source: "/api/ws",
+				destination: `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/socket.io`,
 			},
 		];
 	},
@@ -20,6 +20,16 @@ const nextConfig = {
 				],
 			},
 		];
+	},
+	webpack: (config, { isServer }) => {
+		if (!isServer) {
+			config.resolve.fallback = {
+				...config.resolve.fallback,
+				net: false,
+				tls: false,
+			};
+		}
+		return config;
 	},
 };
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { io } from "socket.io-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,9 +27,7 @@ import {
 	FaMusic,
 	FaTrash,
 } from "react-icons/fa";
-
 import { FaXmark } from "react-icons/fa6";
-
 import { Slider } from "./ui/slider";
 import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
@@ -57,66 +54,113 @@ export function MusicController() {
 	const { data: session, status } = useSession();
 	const { toast } = useToast();
 	const progressInterval = useRef(null);
+	const wsRef = useRef(null);
 
-	useEffect(() => {
-		if (session?.accessToken) {
-			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL
-				.replace("http://", "ws://")
-				.replace("https://", "wss://")
-			console.log("Connecting to WebSocket:", wsUrl);
-
-			const socket = io(wsUrl, {
-				auth: {
-					token: session.accessToken,
-				},
-				transports: ["websocket"],
-				secure: true,
-				rejectUnauthorized: false,
-				withCredentials: true,
-			});
-
-			socket.on("connect", () => {
-				console.log("Socket connected");
-				setSocketInstance(socket);
-				socket.emit("GetVoice", session.user.id);
-			});
-
-			socket.on("ReplyVoice", (data) => {
-				setVoiceChannel(data.channel);
-				setGuildInfo(data.guild);
-			});
-
-			socket.on("statistics", (stats) => {
-				setPlayerStats({
-					currentTrack: stats.track,
-					playlist: stats.queue || [],
-					isPlaying: !stats.paused,
-					volume: stats.volume,
-					duration: {
-						current: stats.timestamp?.current?.current?.value ?? 0,
-						total: stats.timestamp?.total ?? 0,
-					},
-					repeatMode: stats.repeatMode,
-					shuffle: stats.shuffle,
-				});
-			});
-
-			socket.on("disconnect", () => {
-				console.log("Socket disconnected");
+	const sendCommand = useCallback(
+		(command, payload = {}) => {
+			if (wsRef.current?.readyState === WebSocket.OPEN) {
+				wsRef.current.send(
+					JSON.stringify({
+						event: command,
+						payload: { userID: session?.user?.id, ...payload },
+					}),
+				);
 				toast({
-					title: "Disconnected",
-					description: "Lost connection to the music bot. Please refresh the page.",
+					title: "Command Sent",
+					description: `Sent ${command} command`,
+				});
+			} else {
+				toast({
+					title: "Error",
+					description: "Not connected to voice channel",
 					variant: "destructive",
 				});
-			});
+			}
+		},
+		[session, toast],
+	);
 
-			return () => {
-				if (socket) {
-					socket.disconnect();
+	const connectWebSocket = useCallback(() => {
+		if (session?.accessToken) {
+			const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+			const ws = new WebSocket(`${wsProtocol}//${window.location.host}/api/ws`);
+			wsRef.current = ws;
+
+			ws.onopen = () => {
+				console.log("WebSocket connected");
+				ws.send(
+					JSON.stringify({
+						event: "GetVoice",
+						payload: session.user.id,
+					}),
+				);
+			};
+
+			ws.onmessage = (event) => {
+				try {
+					const data = JSON.parse(event.data);
+					console.log("Received WebSocket message:", data);
+
+					switch (data.event) {
+						case "ReplyVoice":
+							setVoiceChannel(data.payload.channel);
+							setGuildInfo(data.payload.guild);
+							break;
+
+						case "statistics":
+							setPlayerStats({
+								currentTrack: data.payload.track,
+								playlist: data.payload.queue || [],
+								isPlaying: !data.payload.paused,
+								volume: data.payload.volume,
+								duration: {
+									current: data.payload.timestamp?.current?.current?.value ?? 0,
+									total: data.payload.timestamp?.total ?? 0,
+								},
+								repeatMode: data.payload.repeatMode,
+								shuffle: data.payload.shuffle,
+							});
+							break;
+
+						default:
+							console.log("Unhandled event:", data.event);
+					}
+				} catch (error) {
+					console.error("Error processing WebSocket message:", error);
 				}
+			};
+
+			ws.onclose = (event) => {
+				console.log("WebSocket disconnected:", event);
+				toast({
+					title: "Disconnected",
+					description: `Lost connection to the music bot. Attempting to reconnect... (Code: ${event.code})`,
+					variant: "destructive",
+				});
+				setTimeout(connectWebSocket, 5000); // Attempt to reconnect after 5 seconds
+			};
+
+			ws.onerror = (error) => {
+				console.error("WebSocket error:", error);
+				toast({
+					title: "WebSocket Error",
+					description:
+						"An error occurred with the WebSocket connection. Attempting to reconnect...",
+					variant: "destructive",
+				});
 			};
 		}
 	}, [session, toast]);
+
+	useEffect(() => {
+		connectWebSocket();
+
+		return () => {
+			if (wsRef.current?.readyState === WebSocket.OPEN) {
+				wsRef.current.close();
+			}
+		};
+	}, [connectWebSocket]);
 
 	useEffect(() => {
 		if (playerStats.isPlaying) {
@@ -135,25 +179,6 @@ export function MusicController() {
 
 		return () => clearInterval(progressInterval.current);
 	}, [playerStats.isPlaying]);
-
-	const sendCommand = useCallback(
-		(command, payload = {}) => {
-			if (socketInstance?.connected && session?.user.id) {
-				socketInstance.emit(command, { userID: session.user.id, ...payload });
-				toast({
-					title: "Command Sent",
-					description: `Sent ${command} command`,
-				});
-			} else {
-				toast({
-					title: "Error",
-					description: "Not connected to voice channel",
-					variant: "destructive",
-				});
-			}
-		},
-		[socketInstance, session, toast],
-	);
 
 	const handleVolumeCommit = useCallback(
 		(value) => {
@@ -191,6 +216,7 @@ export function MusicController() {
 	const handleSearchCancel = () => {
 		setSearchResults([]);
 	};
+
 	const formatTime = (ms) => {
 		const seconds = Math.floor((ms / 1000) % 60);
 		const minutes = Math.floor((ms / (1000 * 60)) % 60);

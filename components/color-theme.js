@@ -24,7 +24,7 @@ const themes = [
 	{
 		name: "Rose",
 		class: "theme-rose",
-		color: "bg-rose-500",
+		color: "bg-pink-500",
 	},
 	{
 		name: "Orange",

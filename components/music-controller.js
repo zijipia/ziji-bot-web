@@ -31,6 +31,7 @@ import { FaXmark } from "react-icons/fa6";
 import { Slider } from "./ui/slider";
 import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
+import Loading from "./Loading";
 
 export function MusicController() {
 	const [socketInstance, setSocketInstance] = useState(null);
@@ -83,7 +84,9 @@ export function MusicController() {
 	const connectWebSocket = useCallback(() => {
 		if (session?.accessToken) {
 			const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-			const ws = new WebSocket(`${wsProtocol}//${window.location.host}/api/ws`);
+			const wsUrl = `${window.location.protocol}//${window.location.host}/api/ws`;
+			console.log("WebSocket URL:", wsUrl);
+			const ws = new WebSocket(wsUrl);
 			wsRef.current = ws;
 
 			ws.onopen = () => {
@@ -229,7 +232,7 @@ export function MusicController() {
 	};
 
 	if (status === "loading") {
-		return <p>Loading...</p>;
+		return <Loading />;
 	}
 
 	if (!session) {

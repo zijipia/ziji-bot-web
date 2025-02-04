@@ -16,16 +16,16 @@ export default function RootLayout({ children }) {
 			lang='en'
 			suppressHydrationWarning>
 			<body className={inter.className}>
-				<AuthProvider>
-					<ThemeProvider
-						attribute='class'
-						defaultTheme='system'
-						enableSystem
-						disableTransitionOnChange>
-						{children}
-						<Toaster />
-					</ThemeProvider>
-				</AuthProvider>
+				{/* <AuthProvider> */}
+				{/* <ThemeProvider
+					attribute='class'
+					defaultTheme='system'
+					enableSystem
+					disableTransitionOnChange> */}
+				{children}
+				{/* <Toaster />
+				</ThemeProvider> */}
+				{/* </AuthProvider> */}
 			</body>
 		</html>
 	);

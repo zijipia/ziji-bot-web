@@ -1,6 +1,5 @@
 "use client";
 
-import { io } from "socket.io-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +81,7 @@ export function MusicController() {
 							isPlaying: !data.paused,
 							volume: data.volume,
 							duration: {
-								current: data.timestamp?.current?.value ?? 0,
+								current: data.timestamp?.current ?? 0,
 								total: data.timestamp?.total ?? 0,
 							},
 							repeatMode: data.repeatMode,
@@ -106,7 +105,9 @@ export function MusicController() {
 					variant: "destructive",
 				});
 			};
-			ws.onerror = () => console.log;
+			ws.onerror = (error) => {
+				console.error("WebSocket error:", error);
+			};
 			return () => ws.close();
 		}
 	}, [session, toast]);
@@ -151,7 +152,7 @@ export function MusicController() {
 	const handleSearch = useCallback(async () => {
 		try {
 			const searchUrl = `${
-				process.env.NEXT_PUBLIC_WEBSOCKET_URL
+				process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_WEBSOCKET_URL
 			}/api/search?query=${encodeURIComponent(searchQuery)}`;
 			const proxyUrl = `/api/proxy?url=${encodeURIComponent(searchUrl)}`;
 
@@ -244,13 +245,15 @@ export function MusicController() {
 												key={index}
 												className='backdrop-blur-sm bg-background/80 dark:bg-background/40 flex'>
 												<img
-													src={track.thumbnail || "/placeholder.svg"}
+													src={track.thumbnail || session.user?.image_url}
 													alt={track.title}
 													className='w-24 h-24 object-cover'
 												/>
 												<div className='flex-1 p-4'>
 													<h4 className='font-medium line-clamp-1'>{track.title}</h4>
-													<p className='text-sm text-muted-foreground'>{track.duration}</p>
+													<p className='text-sm text-muted-foreground'>
+														{track.duration} - {track.artist || track.author}
+													</p>
 													<div className='flex gap-2 mt-2'>
 														<Button
 															size='sm'
@@ -288,14 +291,20 @@ export function MusicController() {
 											className='overflow-hidden'>
 											<CardContent className='p-0'>
 												<img
-													src={track.thumbnail || "/placeholder.svg"}
+													src={track.thumbnail || session.user?.image_url}
 													alt={track.title}
 													className='w-full h-32 object-cover'
 												/>
 											</CardContent>
 											<CardHeader className='p-4'>
 												<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
-												<CardDescription className='text-xs'>{track.duration}</CardDescription>
+												<CardDescription className='text-xs'>
+													<h4 className='font-medium line-clamp-1'>
+														{track.artist || track.author}
+													</h4>
+
+													{track.duration}
+												</CardDescription>
 											</CardHeader>
 
 											<CardFooter className='p-4 flex justify-between'>

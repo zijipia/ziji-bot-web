@@ -33,7 +33,7 @@ promises an unparalleled music control experience for all Discord enthusiasts.
   - shadcn/ui components
 - **Backend**:
   - Express.js
-  - Socket.IO for real-time communication
+  - WebSocket for real-time communication
   - discord-player for music playback
 - **Authentication**:
   - NextAuth.js with Discord provider
@@ -74,6 +74,7 @@ Before you embark on this musical journey, ensure you have the following:
    DISCORD_CLIENT_SECRET=your_discord_client_secret
    NEXTAUTH_URL=your_nextauth_url (http://localhost:3000)
    NEXT_PUBLIC_WEBSOCKET_URL=your_websocket_url (http://localhost:2003 or ws://localhost:2003)
+   NEXT_PUBLIC_API_URL=your_API_url
    NEXTAUTH_SECRET=your_nextauth_secret
    ```
 

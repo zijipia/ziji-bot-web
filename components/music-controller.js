@@ -106,7 +106,7 @@ export function MusicController() {
 					variant: "destructive",
 				});
 			};
-
+			ws.onerror = () => console.log;
 			return () => ws.close();
 		}
 	}, [session, toast]);

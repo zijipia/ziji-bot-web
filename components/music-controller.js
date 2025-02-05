@@ -1,6 +1,5 @@
 "use client";
 
-import { io } from "socket.io-client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +37,7 @@ import Loading from "./Loading";
 import { LoginScreen } from "./Loginscreen";
 
 export function MusicController() {
-	const [socketInstance, setSocketInstance] = useState(null);
+	const [socket, setSocket] = useState(null);
 	const [voiceChannel, setVoiceChannel] = useState(null);
 	const [guildInfo, setGuildInfo] = useState(null);
 	const [playerStats, setPlayerStats] = useState({
@@ -65,56 +64,51 @@ export function MusicController() {
 			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
 			console.log("Connecting to WebSocket:", wsUrl);
 
-			const socket = io(wsUrl, {
-				auth: {
-					token: session.accessToken,
-				},
-				transports: ["websocket"],
-				secure: true,
-				rejectUnauthorized: false,
-				withCredentials: true,
-			});
+			const ws = new WebSocket(wsUrl);
+			ws.onopen = () => {
+				console.log("WebSocket connected");
+				setSocket(ws);
+				ws.send(JSON.stringify({ event: "GetVoice", userID: session.user.id }));
+			};
 
-			socket.on("connect", () => {
-				console.log("Socket connected");
-				setSocketInstance(socket);
-				socket.emit("GetVoice", session.user.id);
-			});
-
-			socket.on("ReplyVoice", (data) => {
-				setVoiceChannel(data.channel);
-				setGuildInfo(data.guild);
-			});
-
-			socket.on("statistics", (stats) => {
-				setPlayerStats({
-					currentTrack: stats.track,
-					playlist: stats.queue || [],
-					isPlaying: !stats.paused,
-					volume: stats.volume,
-					duration: {
-						current: stats.timestamp?.current?.current?.value ?? 0,
-						total: stats.timestamp?.total ?? 0,
-					},
-					repeatMode: stats.repeatMode,
-					shuffle: stats.shuffle,
-				});
-			});
-
-			socket.on("disconnect", () => {
-				console.log("Socket disconnected");
-				toast({
-					title: "Disconnected",
-					description: "Lost connection to the music bot. Please refresh the page.",
-					variant: "destructive",
-				});
-			});
-
-			return () => {
-				if (socket) {
-					socket.disconnect();
+			ws.onmessage = (event) => {
+				const data = JSON.parse(event.data);
+				switch (data.event) {
+					case "statistics": {
+						setPlayerStats({
+							currentTrack: data.track,
+							playlist: data.queue || [],
+							isPlaying: !data.paused,
+							volume: data.volume,
+							duration: {
+								current: data.timestamp?.current ?? 0,
+								total: data.timestamp?.total ?? 0,
+							},
+							repeatMode: data.repeatMode,
+							shuffle: data.shuffle,
+						});
+						break;
+					}
+					case "ReplyVoice": {
+						setVoiceChannel(data.channel);
+						setGuildInfo(data.guild);
+						break;
+					}
 				}
 			};
+
+			ws.onclose = () => {
+				console.log("WebSocket disconnected");
+				toast({
+					title: "Disconnected",
+					description: "Lost connection to the music bot. Please refresh.",
+					variant: "destructive",
+				});
+			};
+			ws.onerror = (error) => {
+				console.error("WebSocket error:", error);
+			};
+			return () => ws.close();
 		}
 	}, [session, toast]);
 
@@ -138,21 +132,14 @@ export function MusicController() {
 
 	const sendCommand = useCallback(
 		(command, payload = {}) => {
-			if (socketInstance?.connected && session?.user.id) {
-				socketInstance.emit(command, { userID: session.user.id, ...payload });
-				toast({
-					title: "Command Sent",
-					description: `Sent ${command} command`,
-				});
+			if (socket?.readyState === WebSocket.OPEN) {
+				socket.send(JSON.stringify({ event: command, userID: session?.user.id, ...payload }));
+				toast({ title: "Command Sent", description: `Sent ${command} command` });
 			} else {
-				toast({
-					title: "Error",
-					description: "Not connected to voice channel",
-					variant: "destructive",
-				});
+				toast({ title: "Error", description: "Not connected to server", variant: "destructive" });
 			}
 		},
-		[socketInstance, session, toast],
+		[socket, session, toast],
 	);
 
 	const handleVolumeCommit = useCallback(
@@ -165,7 +152,7 @@ export function MusicController() {
 	const handleSearch = useCallback(async () => {
 		try {
 			const searchUrl = `${
-				process.env.NEXT_PUBLIC_WEBSOCKET_URL
+				process.env.NEXT_PUBLIC_API_URL ?? process.env.NEXT_PUBLIC_WEBSOCKET_URL
 			}/api/search?query=${encodeURIComponent(searchQuery)}`;
 			const proxyUrl = `/api/proxy?url=${encodeURIComponent(searchUrl)}`;
 
@@ -258,13 +245,15 @@ export function MusicController() {
 												key={index}
 												className='backdrop-blur-sm bg-background/80 dark:bg-background/40 flex'>
 												<img
-													src={track.thumbnail || "/placeholder.svg"}
+													src={track.thumbnail || session.user?.image_url}
 													alt={track.title}
 													className='w-24 h-24 object-cover'
 												/>
 												<div className='flex-1 p-4'>
 													<h4 className='font-medium line-clamp-1'>{track.title}</h4>
-													<p className='text-sm text-muted-foreground'>{track.duration}</p>
+													<p className='text-sm text-muted-foreground'>
+														{track.duration} - {track.artist || track.author}
+													</p>
 													<div className='flex gap-2 mt-2'>
 														<Button
 															size='sm'
@@ -302,14 +291,20 @@ export function MusicController() {
 											className='overflow-hidden'>
 											<CardContent className='p-0'>
 												<img
-													src={track.thumbnail || "/placeholder.svg"}
+													src={track.thumbnail || session.user?.image_url}
 													alt={track.title}
 													className='w-full h-32 object-cover'
 												/>
 											</CardContent>
 											<CardHeader className='p-4'>
 												<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
-												<CardDescription className='text-xs'>{track.duration}</CardDescription>
+												<CardDescription className='text-xs'>
+													<h4 className='font-medium line-clamp-1'>
+														{track.artist || track.author}
+													</h4>
+
+													{track.duration}
+												</CardDescription>
 											</CardHeader>
 
 											<CardFooter className='p-4 flex justify-between'>

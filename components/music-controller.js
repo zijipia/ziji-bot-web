@@ -3,15 +3,16 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/hooks/use-toast";
 import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
+	CardFooter,
 } from "@/components/ui/card";
 import {
 	FaPlay,
@@ -35,8 +36,10 @@ import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
 import Loading from "./Loading";
 import { LoginScreen } from "./Loginscreen";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export function MusicController() {
+	const [connectionStatus, setConnectionStatus] = useState("Connecting");
 	const [socket, setSocket] = useState(null);
 	const [voiceChannel, setVoiceChannel] = useState(null);
 	const [guildInfo, setGuildInfo] = useState(null);
@@ -62,11 +65,10 @@ export function MusicController() {
 	useEffect(() => {
 		if (session?.accessToken) {
 			const wsUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL;
-			console.log("Connecting to WebSocket:", wsUrl);
 
 			const ws = new WebSocket(wsUrl);
 			ws.onopen = () => {
-				console.log("WebSocket connected");
+				setConnectionStatus("Connected");
 				setSocket(ws);
 				ws.send(JSON.stringify({ event: "GetVoice", userID: session.user.id }));
 			};
@@ -98,19 +100,17 @@ export function MusicController() {
 			};
 
 			ws.onclose = () => {
-				console.log("WebSocket disconnected");
-				toast({
-					title: "Disconnected",
-					description: "Lost connection to the music bot. Please refresh.",
-					variant: "destructive",
-				});
+				setConnectionStatus("Disconnected");
 			};
+
 			ws.onerror = (error) => {
 				console.error("WebSocket error:", error);
+				setConnectionStatus("Error");
 			};
+
 			return () => ws.close();
 		}
-	}, [session, toast]);
+	}, [session]);
 
 	useEffect(() => {
 		if (playerStats.isPlaying) {
@@ -141,6 +141,13 @@ export function MusicController() {
 		},
 		[socket, session, toast],
 	);
+
+	const handleVolumeChange = useCallback((value) => {
+		setPlayerStats((prev) => ({
+			...prev,
+			volume: value[0],
+		}));
+	}, []);
 
 	const handleVolumeCommit = useCallback(
 		(value) => {
@@ -199,7 +206,10 @@ export function MusicController() {
 
 	return (
 		<div className='grid grid-cols-1 md:grid-cols-3 gap-6 p-6'>
-			<div className='md:col-span-2 space-y-6'>
+			<div
+				className={
+					playerStats.currentTrack ? "md:col-span-2 space-y-6" : "md:col-span-3 space-y-6"
+				}>
 				<div className='rounded-2xl p-px bg-gradient-to-br  from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] dark:from-[hsl(var(--dark-gradient-start))] dark:to-[hsl(var(--dark-gradient-end))]'>
 					<Card className='rounded-[calc(1.0rem-1px)]  bg-slate-50 dark:bg-slate-950'>
 						<CardHeader>
@@ -235,9 +245,9 @@ export function MusicController() {
 								)}
 							</div>
 						</CardHeader>
-						{searchResults.length > 0 && (
+						{searchResults.length > 0 ? (
 							<CardContent>
-								<h3 className='text-lg font-semibold mb-4'>Search Results</h3>
+								<h3 className='text-lg font-semibold mb-4 text-center'>Search Results</h3>
 								<ScrollArea className='h-[624px] pr-4'>
 									<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 										{searchResults.map((track, index) => (
@@ -261,13 +271,101 @@ export function MusicController() {
 															onClick={() => sendCommand("play", { trackUrl: track.url })}>
 															<FaPlay className='h-4 w-4' />
 														</Button>
-														<Button
-															size='sm'
-															variant='ghost'>
-															<FaHeart className='h-4 w-4' />
-														</Button>
+														<TooltipProvider>
+															<Button
+																size='sm'
+																variant='ghost'>
+																<Tooltip>
+																	<TooltipTrigger asChild>
+																		<FaHeart className='h-4 w-4' />
+																	</TooltipTrigger>
+																	<TooltipContent>Add to Favorites</TooltipContent>
+																</Tooltip>
+															</Button>
+														</TooltipProvider>
 													</div>
 												</div>
+											</Card>
+										))}
+									</div>
+								</ScrollArea>
+							</CardContent>
+						) : (
+							<CardContent>
+								<h3 className='text-lg font-semibold mb-4 text-center'>
+									Queue in {guildInfo?.name}
+								</h3>
+								{!playerStats.playlist.length && (
+									<div className='flex justify-center items-center h-full'>
+										Không có bài hát nào trong hàng đợi
+									</div>
+								)}
+								<ScrollArea className='h-[628px] pr-4'>
+									<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto'>
+										{playerStats.playlist.map((track, index) => (
+											<Card
+												key={index}
+												className='overflow-hidden'>
+												<CardContent className='p-0'>
+													<img
+														src={track.thumbnail || session.user?.image_url}
+														alt={track.title}
+														className='w-full h-32 object-cover'
+													/>
+												</CardContent>
+												<CardHeader className='p-4'>
+													<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
+													<CardDescription className='text-xs'>
+														<h4 className='font-medium line-clamp-1'>
+															{track.artist || track.author}
+														</h4>
+
+														{track.duration}
+													</CardDescription>
+												</CardHeader>
+
+												<CardFooter className='p-4 flex justify-between'>
+													<Button
+														variant='ghost'
+														size='icon'
+														onClick={() =>
+															sendCommand("Playnext", {
+																TrackPosition: index + 1,
+																trackUrl: track.url,
+															})
+														}>
+														<FaPlay className='h-4 w-4' />
+													</Button>
+													<div className='flex gap-2'>
+														<TooltipProvider>
+															<Button
+																variant='ghost'
+																size='icon'
+																onClick={() =>
+																	sendCommand("DelTrack", { TrackPosition: index + 1 })
+																}>
+																<Tooltip>
+																	<TooltipTrigger asChild>
+																		<FaTrash className='h-4 w-4' />
+																	</TooltipTrigger>
+																	<TooltipContent>Remove from Queue</TooltipContent>
+																</Tooltip>
+															</Button>
+														</TooltipProvider>
+														<TooltipProvider>
+															<Button
+																variant='ghost'
+																size='icon'>
+																<Tooltip>
+																	<TooltipTrigger asChild>
+																		<FaShareAlt className='h-4 w-4' />
+																	</TooltipTrigger>
+																	<TooltipContent>Share Track</TooltipContent>
+																</Tooltip>
+															</Button>
+														</TooltipProvider>
+													</div>
+												</CardFooter>
 											</Card>
 										))}
 									</div>
@@ -276,74 +374,22 @@ export function MusicController() {
 						)}
 					</Card>
 				</div>
-
-				<div className='rounded-2xl p-px bg-gradient-to-br  from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] dark:from-[hsl(var(--dark-gradient-start))] dark:to-[hsl(var(--dark-gradient-end))]'>
-					<Card className='rounded-[calc(1.0rem-1px)]  bg-slate-50 dark:bg-slate-950'>
-						<CardHeader>
-							<CardTitle>Queue</CardTitle>
-						</CardHeader>
-						<CardContent>
-							<ScrollArea className='h-[576px] pr-4'>
-								<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto'>
-									{playerStats.playlist.map((track, index) => (
-										<Card
-											key={index}
-											className='overflow-hidden'>
-											<CardContent className='p-0'>
-												<img
-													src={track.thumbnail || session.user?.image_url}
-													alt={track.title}
-													className='w-full h-32 object-cover'
-												/>
-											</CardContent>
-											<CardHeader className='p-4'>
-												<CardTitle className='text-sm line-clamp-1'>{track.title}</CardTitle>
-												<CardDescription className='text-xs'>
-													<h4 className='font-medium line-clamp-1'>
-														{track.artist || track.author}
-													</h4>
-
-													{track.duration}
-												</CardDescription>
-											</CardHeader>
-
-											<CardFooter className='p-4 flex justify-between'>
-												<Button
-													variant='ghost'
-													size='icon'
-													onClick={() => sendCommand("play", { index })}>
-													<FaPlay className='h-4 w-4' />
-												</Button>
-												<div className='flex gap-2'>
-													<Button
-														variant='ghost'
-														size='icon'>
-														<FaTrash className='h-4 w-4' />
-													</Button>
-													<Button
-														variant='ghost'
-														size='icon'>
-														<FaShareAlt className='h-4 w-4' />
-													</Button>
-												</div>
-											</CardFooter>
-										</Card>
-									))}
-								</div>
-							</ScrollArea>
-						</CardContent>
-					</Card>
-				</div>
 			</div>
-
-			<div className='md:col-span-1'>
-				<div className='rounded-2xl p-px bg-gradient-to-br  from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] dark:from-[hsl(var(--dark-gradient-start))] dark:to-[hsl(var(--dark-gradient-end))]'>
-					<Card className='rounded-[calc(1.0rem-1px)]  bg-slate-50 dark:bg-slate-950'>
-						<CardHeader>
-							<CardTitle>Now Playing {voiceChannel && `in ${voiceChannel.name}`}</CardTitle>
-						</CardHeader>
-						<CardContent>
-							{playerStats.currentTrack ? (
+			{playerStats.currentTrack && (
+				<div className='md:col-span-1'>
+					<div className='rounded-2xl p-px bg-gradient-to-br  from-[hsl(var(--gradient-start))] to-[hsl(var(--gradient-end))] dark:from-[hsl(var(--dark-gradient-start))] dark:to-[hsl(var(--dark-gradient-end))]'>
+						<Card className='rounded-[calc(1.0rem-1px)]  bg-slate-50 dark:bg-slate-950'>
+							<CardHeader>
+								<CardTitle>
+									Now Playing {voiceChannel && `in ${voiceChannel.name}`}
+									<Badge
+										variant={connectionStatus === "Connected" ? "success" : "destructive"}
+										className='ml-3'>
+										{connectionStatus}
+									</Badge>
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
 								<div className='space-y-6'>
 									<div className='aspect-square relative rounded-lg overflow-hidden'>
 										<img
@@ -395,7 +441,8 @@ export function MusicController() {
 											<FaVolumeUp className='h-4 w-4' />
 											<Slider
 												value={[playerStats.volume]}
-												onValueChange={handleVolumeCommit}
+												onValueChange={handleVolumeChange}
+												onValueCommit={handleVolumeCommit}
 												max={100}
 												step={1}
 											/>
@@ -409,14 +456,26 @@ export function MusicController() {
 											onClick={() => sendCommand("shuffle")}>
 											<FaRandom className='h-4 w-4' />
 										</Button>
-										<Button
-											variant={playerStats.repeatMode !== 0 ? "default" : "ghost"}
-											size='icon'
-											onClick={() =>
-												sendCommand("loop", { mode: (playerStats.repeatMode + 1) % 3 })
-											}>
-											<FaRedo className='h-4 w-4' />
-										</Button>
+										<TooltipProvider>
+											<Tooltip>
+												<TooltipTrigger asChild>
+													<Button
+														variant={playerStats.repeatMode !== 0 ? "default" : "ghost"}
+														size='icon'
+														onClick={() =>
+															sendCommand("loop", { mode: (playerStats.repeatMode + 1) % 4 })
+														}>
+														<FaRedo className='h-4 w-4' />
+													</Button>
+												</TooltipTrigger>
+												<TooltipContent>
+													{playerStats.repeatMode === 0 && "Loop: Off"}
+													{playerStats.repeatMode === 1 && "Loop: Track"}
+													{playerStats.repeatMode === 2 && "Loop: Queue"}
+													{playerStats.repeatMode === 3 && "Loop: AutoPlay"}
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
 										<Button
 											variant={showLyrics ? "default" : "ghost"}
 											size='icon'
@@ -436,13 +495,11 @@ export function MusicController() {
 										</ScrollArea>
 									)}
 								</div>
-							) : (
-								<div className='text-center text-muted-foreground'>No track currently playing</div>
-							)}
-						</CardContent>
-					</Card>
+							</CardContent>
+						</Card>
+					</div>
 				</div>
-			</div>
+			)}
 		</div>
 	);
 }

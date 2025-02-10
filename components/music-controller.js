@@ -332,7 +332,14 @@ export function MusicController() {
 							</CardContent>
 						) : (
 							<CardContent>
-								<h3 className='text-lg font-semibold mb-4'>Queue</h3>
+								<h3 className='text-lg font-semibold mb-4 text-center'>
+									Queue in {guildInfo?.name}
+								</h3>
+								{!playerStats.playlist.length && (
+									<div className='flex justify-center items-center h-full'>
+										Không có bài hát nào trong hàng đợi
+									</div>
+								)}
 								<ScrollArea className='h-[628px] pr-4'>
 									<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto'>
 										{playerStats.playlist.map((track, index) => (
@@ -359,14 +366,22 @@ export function MusicController() {
 													<Button
 														variant='ghost'
 														size='icon'
-														onClick={() => sendCommand("play", { index })}>
+														onClick={() =>
+															sendCommand("Playnext", {
+																TrackPosition: index + 1,
+																trackUrl: track.url,
+															})
+														}>
 														<FaPlay className='h-4 w-4' />
 													</Button>
 													<div className='flex gap-2'>
 														<TooltipProvider>
 															<Button
 																variant='ghost'
-																size='icon'>
+																size='icon'
+																onClick={() =>
+																	sendCommand("DelTrack", { TrackPosition: index + 1 })
+																}>
 																<Tooltip>
 																	<TooltipTrigger asChild>
 																		<FaTrash className='h-4 w-4' />

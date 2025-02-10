@@ -28,8 +28,8 @@ import {
 	FaMusic,
 	FaTrash,
 } from "react-icons/fa";
-
 import { FaXmark } from "react-icons/fa6";
+import { FaFacebook, FaTwitter, FaWhatsapp, FaLink } from "react-icons/fa";
 
 import { Slider } from "./ui/slider";
 import { Progress } from "./ui/progress";
@@ -37,6 +37,12 @@ import { ScrollArea } from "./ui/scroll-area";
 import Loading from "./Loading";
 import { LoginScreen } from "./Loginscreen";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function MusicController() {
 	const [connectionStatus, setConnectionStatus] = useState("Connecting");
@@ -185,6 +191,7 @@ export function MusicController() {
 	const handleSearchCancel = () => {
 		setSearchResults([]);
 	};
+
 	const formatTime = (ms) => {
 		const seconds = Math.floor((ms / 1000) % 60);
 		const minutes = Math.floor((ms / (1000 * 60)) % 60);
@@ -195,6 +202,39 @@ export function MusicController() {
 			seconds.toString().padStart(2, "0"),
 		].join(":");
 	};
+
+	const handleShare = useCallback(
+		(platform, track) => {
+			const shareText = `Check out this track: ${track.title} by ${track.artist || track.author}`;
+			const shareUrl = track.url;
+			let shareLink;
+
+			switch (platform) {
+				case "facebook":
+					shareLink = `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`;
+					break;
+				case "twitter":
+					shareLink = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+						shareText,
+					)}&url=${shareUrl}`;
+					break;
+				case "whatsapp":
+					shareLink = `https://wa.me/?text=${encodeURIComponent(
+						shareText + " " + decodeURIComponent(shareUrl),
+					)}`;
+					break;
+				case "copy":
+					navigator.clipboard.writeText(`${decodeURIComponent(shareUrl)}`);
+					toast({ title: "Link Copied", description: "Track link copied to clipboard" });
+					return;
+				default:
+					return;
+			}
+
+			window.open(shareLink, "_blank");
+		},
+		[toast],
+	);
 
 	if (status === "loading") {
 		return <Loading />;
@@ -247,7 +287,7 @@ export function MusicController() {
 						</CardHeader>
 						{searchResults.length > 0 ? (
 							<CardContent>
-								<h3 className='text-lg font-semibold mb-4 text-center'>Search Results</h3>
+								<h3 className='text-lg font-semibold mb-4'>Search Results</h3>
 								<ScrollArea className='h-[624px] pr-4'>
 									<div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
 										{searchResults.map((track, index) => (
@@ -292,14 +332,7 @@ export function MusicController() {
 							</CardContent>
 						) : (
 							<CardContent>
-								<h3 className='text-lg font-semibold mb-4 text-center'>
-									Queue in {guildInfo?.name}
-								</h3>
-								{!playerStats.playlist.length && (
-									<div className='flex justify-center items-center h-full'>
-										Không có bài hát nào trong hàng đợi
-									</div>
-								)}
+								<h3 className='text-lg font-semibold mb-4'>Queue</h3>
 								<ScrollArea className='h-[628px] pr-4'>
 									<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto'>
 										{playerStats.playlist.map((track, index) => (
@@ -319,31 +352,21 @@ export function MusicController() {
 														<h4 className='font-medium line-clamp-1'>
 															{track.artist || track.author}
 														</h4>
-
 														{track.duration}
 													</CardDescription>
 												</CardHeader>
-
 												<CardFooter className='p-4 flex justify-between'>
 													<Button
 														variant='ghost'
 														size='icon'
-														onClick={() =>
-															sendCommand("Playnext", {
-																TrackPosition: index + 1,
-																trackUrl: track.url,
-															})
-														}>
+														onClick={() => sendCommand("play", { index })}>
 														<FaPlay className='h-4 w-4' />
 													</Button>
 													<div className='flex gap-2'>
 														<TooltipProvider>
 															<Button
 																variant='ghost'
-																size='icon'
-																onClick={() =>
-																	sendCommand("DelTrack", { TrackPosition: index + 1 })
-																}>
+																size='icon'>
 																<Tooltip>
 																	<TooltipTrigger asChild>
 																		<FaTrash className='h-4 w-4' />
@@ -352,18 +375,29 @@ export function MusicController() {
 																</Tooltip>
 															</Button>
 														</TooltipProvider>
-														<TooltipProvider>
-															<Button
-																variant='ghost'
-																size='icon'>
-																<Tooltip>
-																	<TooltipTrigger asChild>
-																		<FaShareAlt className='h-4 w-4' />
-																	</TooltipTrigger>
-																	<TooltipContent>Share Track</TooltipContent>
-																</Tooltip>
-															</Button>
-														</TooltipProvider>
+														<DropdownMenu>
+															<DropdownMenuTrigger asChild>
+																<Button
+																	variant='ghost'
+																	size='icon'>
+																	<FaShareAlt className='h-4 w-4' />
+																</Button>
+															</DropdownMenuTrigger>
+															<DropdownMenuContent>
+																<DropdownMenuItem onClick={() => handleShare("facebook", track)}>
+																	<FaFacebook className='mr-2 h-4 w-4' /> Facebook
+																</DropdownMenuItem>
+																<DropdownMenuItem onClick={() => handleShare("twitter", track)}>
+																	<FaTwitter className='mr-2 h-4 w-4' /> Twitter
+																</DropdownMenuItem>
+																<DropdownMenuItem onClick={() => handleShare("whatsapp", track)}>
+																	<FaWhatsapp className='mr-2 h-4 w-4' /> WhatsApp
+																</DropdownMenuItem>
+																<DropdownMenuItem onClick={() => handleShare("copy", track)}>
+																	<FaLink className='mr-2 h-4 w-4' /> Copy Link
+																</DropdownMenuItem>
+															</DropdownMenuContent>
+														</DropdownMenu>
 													</div>
 												</CardFooter>
 											</Card>
